@@ -1,4 +1,5 @@
 # EMOZINE
+
 *A full-stack emotional journaling web application — built to demonstrate end-to-end product development for backend engineering roles.*
 
 ---
