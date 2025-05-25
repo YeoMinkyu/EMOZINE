@@ -4,6 +4,7 @@ import Login from './pages/Login.jsx';
 import Home from './pages/Home.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import CreateEntry from './pages/CreateEntry.jsx';
+import EntryList from './pages/EntryList.jsx';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path='/login' element={<Login />} />
         <Route path='/dashboard' element={<Dashboard /> } />
         <Route path='/create' element={<CreateEntry />} />
+        <Route path='/entries' element={<EntryList />} />
       </Routes>
     </BrowserRouter>
   );
