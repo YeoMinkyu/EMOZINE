@@ -1,7 +1,10 @@
-from django.shortcuts import render
 from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from .models import JournalEntry
 from .serializers import JournalEntrySerializer
+from django.contrib.auth.models import User
 
 
 # Create your views here.
@@ -46,3 +49,16 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
         - `Response(serializer.data, status=201)` serializes the newly created entry and sends it back as JSON.
         """
         serializer.save(user=self.request.user)
+
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'Username already exists'}, status=400)
+        user = User.objects.create_user(username=username, password=password)
+        return Response({'message': 'User created successfully'}, status=201)
