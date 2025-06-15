@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import CreateEntry from './pages/CreateEntry.jsx';
 import EntryList from './pages/EntryList.jsx';
 import NavBar from './pages/NavBar.jsx';
+import Register from './pages/Register.jsx';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <NavBar />
       <Routes>
         <Route path='/' element={<Home />} />
+        <Route path='/register' element={<Register />} />
         <Route path='/login' element={<Login />} />
         <Route path='/dashboard' element={<Dashboard /> } />
         <Route path='/create' element={<CreateEntry />} />

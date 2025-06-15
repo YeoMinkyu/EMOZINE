@@ -17,8 +17,9 @@ function NavBar() {
 
     return (
         <nav>
-            <Link to={"/"}>Home</Link>
+            <Link to={"/"}>EMOZINE</Link>
             <Link to={"/create"}>Write</Link>
+            <Link to={"/register"}>Register</Link>
             {!token && <Link to={"/login"}>Login</Link>}
             {token && <button onClick={handleLogout}>Logout</button>}
         </nav>
