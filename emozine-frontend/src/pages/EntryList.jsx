@@ -26,6 +26,9 @@ function EntryList () {
                 });
 
                 if (response.status === 401) {
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    
                     navigate("/login");
                     return;
                 }

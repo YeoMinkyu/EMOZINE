@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
@@ -6,6 +6,15 @@ function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
+    useEffect(()=>{
+        const token = localStorage.getItem('access_token');
+
+        if (token) {
+            navigate('/dashboard');
+        }
+
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // stop page reload
@@ -27,13 +36,13 @@ function Login() {
             localStorage.setItem('access_token', data.access);
             localStorage.setItem('refresh_token', data.refresh);
 
-            navigate('/');
+            navigate('/dashboard');
 
             } else {
-                console.error('Login failed');
+                setError('Login Falied. Check yoru username or password');
             }
         } catch(error) {
-            setError('Login Falied. Check yoru username or password')
+            setError('Login Falied. Check yoru username or password');
         }
         
     }
