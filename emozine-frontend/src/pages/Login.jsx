@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, SetError] = useState('');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -33,7 +33,7 @@ function Login() {
                 console.error('Login failed');
             }
         } catch(error) {
-            SetError('Login Falied. Check yoru username or password')
+            setError('Login Falied. Check yoru username or password')
         }
         
     }

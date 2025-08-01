@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function EntryList () {
     const [entries, setEntries] = useState([]);
@@ -58,6 +59,8 @@ function EntryList () {
                             <strong>{entry.emoji}</strong> {entry.content}
                             <br />
                             <small>{entry.created_at.slice(0, 10)}</small>
+                            <br />
+                            <Link to={`/entries/${entry.id}/edit`}>Edit</Link>
                         </li>
                     ))}
                 </ul>

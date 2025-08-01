@@ -7,6 +7,7 @@ import CreateEntry from './pages/CreateEntry.jsx';
 import EntryList from './pages/EntryList.jsx';
 import NavBar from './pages/NavBar.jsx';
 import Register from './pages/Register.jsx';
+import EditEntry from './pages/EditEntry.jsx';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path='/dashboard' element={<Dashboard /> } />
         <Route path='/create' element={<CreateEntry />} />
         <Route path='/entries' element={<EntryList />} />
+        <Route path='/entries/:id/edit' element={<EditEntry />} />
       </Routes>
     </BrowserRouter>
   );
