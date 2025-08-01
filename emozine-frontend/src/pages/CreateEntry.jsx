@@ -10,7 +10,7 @@ function CreateEntry () {
     useEffect(() => {
         const token = localStorage.getItem("access_token");
 
-        if (!token) {
+        if(!token) {
             navigate('/login');
         }
 
@@ -26,9 +26,9 @@ function CreateEntry () {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}` 
+                    "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ content, emoji })   
+                body: JSON.stringify({ content, emoji })
             });
 
             if(response.ok) {
