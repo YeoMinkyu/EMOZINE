@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Register() {
@@ -6,6 +6,14 @@ function Register() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const token = localStorage.getItem('access_token');
+
+        if (token) {
+            navigate('/dashboard');
+        }
+    }, [navigate]);
     
     const handleRegister = async (e) => {
         e.preventDefault();

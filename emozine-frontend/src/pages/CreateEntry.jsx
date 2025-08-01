@@ -19,7 +19,7 @@ function CreateEntry () {
     // handleSubmit with async-await and try catch to POST journal entry to backend('/api/entries/')
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem("access_token");
+        const token = localStorage.getItem("access_token"); // Why there is no async-await clause for `logcalStorage.getItem()`
 
         try {
             const response = await fetch("http://127.0.0.1:8000/api/entries/", {
