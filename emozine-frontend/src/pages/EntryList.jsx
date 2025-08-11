@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import Modal from "../components/Modal";
 
 function EntryList () {
     const [entries, setEntries] = useState([]);
     const [loading, setLoading] = useState("");
+    const [deletedId, setDeletedId] = useState("")
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
@@ -47,13 +49,40 @@ function EntryList () {
        fetchEntries();
     }, [navigate])
 
+    const handleDelete = async (id) => {
+        const token = localStorage.getItem('access_token'); 
+
+        console.log("Handle Deleted!");
+
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/entries/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+            });
+
+            if(response.ok){
+                setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
+                setDeletedId(null);
+            } else {
+                setError("Faild deleting a entry");
+            }
+
+        } catch(err) {
+            setError(err || "Failed deleting a entry");
+        }
+        
+    }
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
 
     return (
         <div>
             <h2>Your Journal Entries</h2>
-            {entries.length == 0 ? (<p>
+            {entries.length === 0 ? (<p>
                 No entreis yet.
             </p>) : (
                 <ul>
@@ -64,6 +93,16 @@ function EntryList () {
                             <small>{entry.created_at.slice(0, 10)}</small>
                             <br />
                             <Link to={`/entries/${entry.id}/edit`}>Edit</Link>
+                            <button onClick={() => {
+                                setDeletedId(entry.id);
+                            }
+                                }>Delete</button>
+                            {
+                                deletedId === entry.id &&
+                                <Modal isOpen={deletedId} onClickedYes={()=> handleDelete(deletedId)} onClickedNo={()=> setDeletedId(null)} id={deletedId}>
+                                    Are you sure to delete?
+                                </Modal>
+                            }
                         </li>
                     ))}
                 </ul>
