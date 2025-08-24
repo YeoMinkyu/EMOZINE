@@ -5,8 +5,9 @@ import Modal from "../components/Modal";
 
 function EntryList () {
     const [entries, setEntries] = useState([]);
-    const [loading, setLoading] = useState("");
-    const [deletedId, setDeletedId] = useState("")
+    const [loading, setLoading] = useState(true); // loading about fetching the data of entries from the server
+    const [deleting, setDeleting] = useState(false); // 
+    const [deletedId, setDeletedId] = useState(null);
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
@@ -20,6 +21,8 @@ function EntryList () {
                     navigate('/login');
                     return;
                 }
+
+                setLoading(true);
 
                 const response = await fetch("http://127.0.0.1:8000/api/entries/", {
                     headers: {
@@ -37,11 +40,11 @@ function EntryList () {
 
                 const data = await response.json();
                 setEntries(data);
-                setLoading(false);
 
             } catch(error) {
                 setError("Error listing entry");
-                setLoading(false);
+            } finally {
+                setLoading(false); // set loading false when the data is fetched successfully or the process of fetching makes an error from the server
             }
         };
 
@@ -50,9 +53,10 @@ function EntryList () {
     }, [navigate])
 
     const handleDelete = async (id) => {
+        if (deleting) return;
         const token = localStorage.getItem('access_token'); 
 
-        console.log("Handle Deleted!");
+        setDeleting(true);
 
         try {
             const response = await fetch(`http://127.0.0.1:8000/api/entries/${id}/`, {
@@ -66,18 +70,21 @@ function EntryList () {
             if(response.ok){
                 setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
                 setDeletedId(null);
-            } else {
+            }  // TODO: 401 behavior
+            else {
                 setError("Faild deleting a entry");
             }
 
         } catch(err) {
             setError(err || "Failed deleting a entry");
+        } finally {
+            setDeleting(false);
         }
         
     }
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
+    if (error) return <p style={{ color: "red" }}>{error}</p>; // Error display: inline
 
     return (
         <div>
@@ -99,7 +106,7 @@ function EntryList () {
                                 }>Delete</button>
                             {
                                 deletedId === entry.id &&
-                                <Modal isOpen={deletedId} onClickedYes={()=> handleDelete(deletedId)} onClickedNo={()=> setDeletedId(null)} id={deletedId}>
+                                <Modal isOpen={true} onConfirm={()=> handleDelete(deletedId)} onCancel={()=> setDeletedId(null)} isDeleting={deleting} id={deletedId}>
                                     Are you sure to delete?
                                 </Modal>
                             }
