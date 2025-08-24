@@ -3,6 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Modal from "../components/Modal";
 
+async function readServerError (response) {
+    try {
+        const body = await response.json();
+
+        if (body?.detail) return body.detail;
+        if (body?.error) return body.error;
+        if (typeof body === 'string') return body;
+        return null; 
+    } catch {
+        return null;
+    }
+}
+
 function EntryList () {
     const [entries, setEntries] = useState([]);
     const [loading, setLoading] = useState(true); // loading about fetching the data of entries from the server
@@ -15,6 +28,7 @@ function EntryList () {
         // Define an async function inside the effect
         const fetchEntries = async () => {  
             try {
+                setError("");
                 const token = localStorage.getItem("access_token");
 
                 if (!token) {
@@ -37,12 +51,16 @@ function EntryList () {
                     navigate("/login");
                     return;
                 }
-
-                const data = await response.json();
-                setEntries(data);
-
+                if (response.ok) {
+                    const data = await response.json();
+                    setEntries(data);    
+                } else {
+                    const serverMsg = await readServerError(response);
+                    const msg = serverMsg || `Failed fetching entries (HTTP ${response.status})`;
+                    setError(msg);
+                }
             } catch(error) {
-                setError("Error listing entry");
+                setError(error?.message || "Network error while fetching entries");
             } finally {
                 setLoading(false); // set loading false when the data is fetched successfully or the process of fetching makes an error from the server
             }
@@ -54,6 +72,7 @@ function EntryList () {
 
     const handleDelete = async (id) => {
         if (deleting) return;
+        setError("");
         const token = localStorage.getItem('access_token'); 
 
         setDeleting(true);
@@ -62,21 +81,30 @@ function EntryList () {
             const response = await fetch(`http://127.0.0.1:8000/api/entries/${id}/`, {
                 method: 'DELETE',
                 headers: {
-                    "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
             });
 
+            if (response.status === 401) {
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
+
+                navigate('/login');
+                return; // stop here, no continue to success / error catch phases
+            }
+
             if(response.ok){
                 setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
                 setDeletedId(null);
-            }  // TODO: 401 behavior
+            }
             else {
-                setError("Faild deleting a entry");
+                const serverMsg = await readServerError(response);
+                const msg = serverMsg || `Failed deleting entry (HTTP ${response.status})`;
+                setError(msg);
             }
 
-        } catch(err) {
-            setError(err || "Failed deleting a entry");
+        } catch(error) {
+            setError(error?.message || "Network error while deleting entry");
         } finally {
             setDeleting(false);
         }
@@ -90,7 +118,7 @@ function EntryList () {
         <div>
             <h2>Your Journal Entries</h2>
             {entries.length === 0 ? (<p>
-                No entreis yet.
+                No entries yet.
             </p>) : (
                 <ul>
                     {entries.map(entry => (
@@ -104,12 +132,17 @@ function EntryList () {
                                 setDeletedId(entry.id);
                             }
                                 }>Delete</button>
-                            {
-                                deletedId === entry.id &&
-                                <Modal isOpen={true} onConfirm={()=> handleDelete(deletedId)} onCancel={()=> setDeletedId(null)} isDeleting={deleting} id={deletedId}>
-                                    Are you sure to delete?
-                                </Modal>
-                            }
+                            {deletedId === entry.id && (
+                              <Modal
+                                isOpen={true}
+                                onConfirm={() => handleDelete(deletedId)}
+                                onCancel={() => setDeletedId(null)}
+                                isDeleting={deleting}
+                                id={deletedId}
+                              >
+                                Are you sure to delete?
+                              </Modal>
+                            )}
                         </li>
                     ))}
                 </ul>
