@@ -1,18 +1,6 @@
 import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
-
-async function  readServerError(response) {
-    try{
-        const body = await response.json();
-        if (body?.detail) return body.detail;
-        if (body?.error) return body.error;
-        if (typeof body === 'string') return body;
-        return null;
-    } catch {
-        return null;
-    }
-    
-}
+import { readServerError } from "../utils/api"
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -56,12 +44,11 @@ function Login() {
             navigate('/dashboard');
 
             } else {
-                const serverMsg = await readServerError(response);
-                const msg = serverMsg || `Login falied. Check yoru username or password (HTTP ${response.status})`
+                const msg = (await readServerError(response)) || `Login falied. Check your username or password (HTTP ${response.status})`
                 setError(msg);
             }
         } catch(error) {
-            setError(error?.message || 'Network Error while login');
+            setError(error?.message || 'Network error while logging in');
         } finally {
             setLoading(false);
         }
@@ -75,13 +62,15 @@ function Login() {
             <form onSubmit={handleSubmit} className="login-form">
                 <label>Username:</label>
                 <input
+                    disabled={loading}
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
                 />
                 <label>Password:</label>
-                <input 
+                <input
+                    disabled={loading}
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

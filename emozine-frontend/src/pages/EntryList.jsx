@@ -2,19 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Modal from "../components/Modal";
-
-async function readServerError (response) {
-    try {
-        const body = await response.json();
-
-        if (body?.detail) return body.detail;
-        if (body?.error) return body.error;
-        if (typeof body === 'string') return body;
-        return null; 
-    } catch {
-        return null;
-    }
-}
+import { readServerError, handleError401 } from "../utils/api"
 
 function EntryList () {
     const [entries, setEntries] = useState([]);
@@ -44,19 +32,16 @@ function EntryList () {
                     },
                 });
 
-                if (response.status === 401) {
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                    
-                    navigate("/login");
+                if (handleError401(response, navigate)) {
+                    setLoading(false);
                     return;
                 }
+
                 if (response.ok) {
                     const data = await response.json();
                     setEntries(data);    
                 } else {
-                    const serverMsg = await readServerError(response);
-                    const msg = serverMsg || `Failed fetching entries (HTTP ${response.status})`;
+                    const msg = (await readServerError(response)) || `Failed fetching entries (HTTP ${response.status})`;
                     setError(msg);
                 }
             } catch(error) {
@@ -85,12 +70,9 @@ function EntryList () {
                 },
             });
 
-            if (response.status === 401) {
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("refresh_token");
-
-                navigate('/login');
-                return; // stop here, no continue to success / error catch phases
+            if (handleError401(response, navigate)) {
+                setDeleting(false);
+                return;
             }
 
             if(response.ok){
@@ -98,8 +80,7 @@ function EntryList () {
                 setDeletedId(null);
             }
             else {
-                const serverMsg = await readServerError(response);
-                const msg = serverMsg || `Failed deleting entry (HTTP ${response.status})`;
+                const msg = (await readServerError(response)) || `Failed to delete entry (HTTP ${response.status})`;
                 setError(msg);
             }
 
@@ -140,7 +121,7 @@ function EntryList () {
                                 isDeleting={deleting}
                                 id={deletedId}
                               >
-                                Are you sure to delete?
+                                Are you sure want to delete?
                               </Modal>
                             )}
                         </li>

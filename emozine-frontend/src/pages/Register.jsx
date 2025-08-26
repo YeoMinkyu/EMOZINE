@@ -1,17 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-async function readServerError(response) {
-    try {
-        const body = await response.json();
-        if (body?.detail) return body.detail;
-        if (body?.error) return body.error;
-        if (typeof body === 'string') return body;
-        return null;
-    } catch {
-        return null;
-    }
-}
+import { readServerError } from "../utils/api"
 
 function Register() {
     const [username, setUsername] = useState("");
@@ -46,8 +35,7 @@ function Register() {
             if (response.ok) {
                 navigate('/login');
             } else {
-                const serverMsg = await readServerError(response);
-                const msg = serverMsg || `Registration failed (HTTP ${response.status})`;
+                const msg = (await readServerError(response)) || `Registration failed (HTTP ${response.status})`;
                 setError(msg);
             }
         } catch (error) {

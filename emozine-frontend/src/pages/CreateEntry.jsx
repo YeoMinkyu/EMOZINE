@@ -1,17 +1,6 @@
-import React, {useState, useEffect} from "react";
-import {useNavigate} from "react-router-dom"
-
-async function readServerError(response) {
-    try {
-        const body = await response.json();
-        if (body?.detail) return body.detail;
-        if (body?.error) return body.error;
-        if (typeof body === 'string') return body;
-        return null;
-    } catch {
-        return null;
-    }
-}
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"
+import { readServerError, handleError401 } from "../utils/api"
 
 function CreateEntry () {
     const [content, setContent] = useState("");
@@ -50,18 +39,15 @@ function CreateEntry () {
                 body: JSON.stringify({ content, emoji })
             });
 
-            if (response.status === 401) {
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("refresh_token");
-                navigate('/login');
+            if (handleError401(response, navigate)) {
+                setLoading(false);
                 return;
             }
 
             if(response.ok) {
                 navigate('/dashboard');
             } else {
-                const serverMsg = await readServerError(response);
-                const msg = serverMsg || `Creation failed (HTTP ${response.status})`;
+                const msg = (await readServerError(response)) || `Failed to create entry (HTTP ${response.status})`;
                 setError(msg);
             }
         } catch (error) {
