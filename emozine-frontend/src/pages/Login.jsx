@@ -1,9 +1,23 @@
 import React, {useEffect, useState} from "react";
 import { useNavigate } from "react-router-dom";
 
+async function  readServerError(response) {
+    try{
+        const body = await response.json();
+        if (body?.detail) return body.detail;
+        if (body?.error) return body.error;
+        if (typeof body === 'string') return body;
+        return null;
+    } catch {
+        return null;
+    }
+    
+}
+
 function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
@@ -18,6 +32,9 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // stop page reload
+        if (loading) return;
+        setError("");
+        setLoading(true);
 
         try{
             const response = await fetch('http://127.0.0.1:8000/api/token/', {
@@ -39,10 +56,14 @@ function Login() {
             navigate('/dashboard');
 
             } else {
-                setError('Login Falied. Check yoru username or password');
+                const serverMsg = await readServerError(response);
+                const msg = serverMsg || `Login falied. Check yoru username or password (HTTP ${response.status})`
+                setError(msg);
             }
         } catch(error) {
-            setError('Login Falied. Check yoru username or password');
+            setError(error?.message || 'Network Error while login');
+        } finally {
+            setLoading(false);
         }
         
     }
@@ -50,7 +71,7 @@ function Login() {
     return(
         <div className="login-container">
             <h2>Login to EMOZINE</h2>
-            {error && <p className="error">{error}</p>}
+            {error && <p role="alert" className="error" style={{ color: "red" }}>{error}</p>}
             <form onSubmit={handleSubmit} className="login-form">
                 <label>Username:</label>
                 <input
@@ -66,7 +87,12 @@ function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <button type="submit">Login</button>
+                <button
+                disabled={loading}
+                aria-disabled={loading}
+                type="submit">
+                    {loading ? "Signing in..." : "Login"}
+                </button>
             </form>
         </div>
     );
