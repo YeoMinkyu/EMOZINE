@@ -1,9 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+async function readServerError(response) {
+    try {
+        const body = await response.json();
+        if (body?.detail) return body.detail;
+        if (body?.error) return body.error;
+        if (typeof body === 'string') return body;
+        return null;
+    } catch {
+        return null;
+    }
+}
+
 function Register() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate()
 
@@ -18,6 +31,11 @@ function Register() {
     const handleRegister = async (e) => {
         e.preventDefault();
 
+        if (loading) return;
+
+        setError("");
+        setLoading(true);
+
         try {
             const response = await fetch("http://127.0.0.1:8000/api/register/", {
             method: "POST",
@@ -28,12 +46,15 @@ function Register() {
             if (response.ok) {
                 navigate('/login');
             } else {
-                const data = await response.json();
-                setError(data.error || "Registration failed");
+                const serverMsg = await readServerError(response);
+                const msg = serverMsg || `Registration failed (HTTP ${response.status})`;
+                setError(msg);
             }
-        } catch {
-            setError("Network error");
-        }         
+        } catch (error) {
+            setError(error?.message || `Network error while registering`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -54,8 +75,13 @@ function Register() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <button type="submit">Register</button>
-                {error && <div style={{color: "red"}}>{error}</div>}
+                <button
+                    disabled={loading}
+                    type="submit"
+                >
+                    {loading ? `Registering...` : `Register`}
+                </button>
+                {error && <p role="alert" style={{color: "red"}}>{error}</p>}
             </form>
         </div>
     );
