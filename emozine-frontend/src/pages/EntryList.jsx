@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
 import { readServerError, handleError401 } from "../utils/api"
+import EmptyState from "./EmptyState";
 
 function EntryList () {
     const [entries, setEntries] = useState([]);
@@ -98,9 +98,9 @@ function EntryList () {
     return (
         <div>
             <h2>Your Journal Entries</h2>
-            {entries.length === 0 ? (<p>
-                No entries yet.
-            </p>) : (
+            {entries.length === 0
+            ? <EmptyState />
+            : (
                 <ul>
                     {entries.map(entry => (
                         <li key={entry.id}>
