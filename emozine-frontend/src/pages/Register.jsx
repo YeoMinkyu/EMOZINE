@@ -48,7 +48,7 @@ function Register() {
     return (
         <div className="register-container">
             <h2>Create an account</h2>
-            <form onSubmit={handleRegister} className="register-form">
+            <form onSubmit={handleRegister} className="register-form" aria-busy={loading}>
                 <label>User Name:</label>
                 <input
                     type="text"

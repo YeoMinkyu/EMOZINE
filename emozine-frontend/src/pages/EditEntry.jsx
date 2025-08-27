@@ -91,7 +91,7 @@ function EditEntry() {
     };
 
     return (
-        <form onSubmit={handleEditing}>
+        <form onSubmit={handleEditing} aria-busy={loading}>
             <textarea
                 disabled={loading || updating}
                 rows="6"
@@ -100,11 +100,11 @@ function EditEntry() {
             />
             <br />
             <select value={emoji} onChange={(e)=>setEmoji(e.target.value)} disabled={loading || updating}>
-                <option value="">😐 None</option>
-                <option value="😊">😊 Happy</option>
-                <option value="😢">😢 Sad</option>
-                <option value="😡">😡 Angry</option>
-                <option value="😌">😌 Calm</option>
+                <option value="" aria-label="None">😐 None</option>
+                <option value="😊" aria-label="Happy">😊 Happy</option>
+                <option value="😢" aria-label="Sad">😢 Sad</option>
+                <option value="😡" aria-label="Angry">😡 Angry</option>
+                <option value="😌" aria-label="Calm">😌 Calm</option>
             </select>
             <button
                 disabled={loading || updating}
@@ -113,7 +113,7 @@ function EditEntry() {
                 {updating ? `Updating...` : `Update`}
             </button>
             <button
-                disabled={loading || updating} 
+                disabled={loading || updating}
                 type="button"
                 onClick={() => navigate('/entries')}
             >

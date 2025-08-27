@@ -1,5 +1,6 @@
 import React, {useEffect} from "react"
 import {useNavigate} from "react-router-dom"
+import EntryList from "./EntryList";
 
 function Dashboard () {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ function Dashboard () {
     return (
         <div>
             <h2>Welcome to Your Journal Dashboard</h2>
+            <EntryList></EntryList>
         </div>
     );
 }

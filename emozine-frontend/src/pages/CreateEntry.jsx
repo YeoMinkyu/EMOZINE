@@ -61,7 +61,7 @@ function CreateEntry () {
         <div className="create-entry">
             <h2>Write a New Journal Entry</h2>
             {error && <p role="alert" style={{color: "red"}}>{error}</p>}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} aria-busy={loading}>
                 <textarea
                     disabled={loading}
                     rows="6"
@@ -76,11 +76,11 @@ function CreateEntry () {
                     value={emoji} 
                     onChange={(e) => setEmoji(e.target.value)    
                     }>
-                        <option value="">😐 None</option>
-                        <option value="😊">😊 Happy</option>
-                        <option value="😢">😢 Sad</option>
-                        <option value="😡">😡 Angry</option>
-                        <option value="😌">😌 Calm</option>
+                        <option value="" aria-label="None">😐 None</option>
+                        <option value="😊" aria-label="Happy">😊 Happy</option>
+                        <option value="😢" aria-label="Sad">😢 Sad</option>
+                        <option value="😡" aria-label="Angry">😡 Angry</option>
+                        <option value="😌" aria-label="Calm">😌 Calm</option>
                 </select>
                 <br />
                 <button

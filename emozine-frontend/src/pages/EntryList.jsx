@@ -93,7 +93,7 @@ function EntryList () {
     }
 
     if (loading) return <p>Loading...</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>; // Error display: inline
+    if (error) return <p style={{ color: "red" }} role="alert">{error}</p>; // Error display: inline
 
     return (
         <div>
