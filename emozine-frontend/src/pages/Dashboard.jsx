@@ -16,7 +16,7 @@ function Dashboard () {
 
     return (
         <div>
-            <h2>Welcome to Your Journal Dashboard</h2>
+            <h2>Journal Dashboard</h2>
             <EntryList></EntryList>
         </div>
     );

@@ -97,7 +97,6 @@ function EntryList () {
 
     return (
         <div>
-            <h2>Your Journal Entries</h2>
             {entries.length === 0
             ? <EmptyState />
             : (
