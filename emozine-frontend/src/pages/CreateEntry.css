@@ -3,7 +3,9 @@
     margin-top: 4px;
 }
 
-.guide-msg {
+.guide-msg, .content-length{
     color: gray;
     margin-top: 4px;
 }
+
+.content-length.invalid {color: rgb(245, 90, 90);}

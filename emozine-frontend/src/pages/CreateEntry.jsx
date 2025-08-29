@@ -12,7 +12,7 @@ function CreateEntry () {
     const navigate = useNavigate();
     
     const contentLen = content.trim().length;
-    const invalidateMsg = validateMinLengthJournal(contentLen, MIN_LENGTH);
+    const invalidMsg = validateMinLengthJournal(contentLen, MIN_LENGTH);
     const guideMsg = (() => {
     if (contentLen === 0) return "Please write something before saving.";
     if (contentLen < MIN_LENGTH) return `Please write at least ${MIN_LENGTH} characters.`;
@@ -43,8 +43,8 @@ function CreateEntry () {
         setError("");
         setLoading(true);
 
-        if (!!invalidateMsg) {
-            setError(invalidateMsg);
+        if (invalidMsg) {
+            setError(invalidMsg);
             setLoading(false);
             return;
         }
@@ -90,7 +90,9 @@ function CreateEntry () {
                     value={content}
                     onChange={handleChangeContent}
                 />
+                <br />
                 {(error && <p className="error-msg" role="alert">{error}</p> )|| (guideMsg && <p className="guide-msg">{guideMsg}</p>)}
+                <small className="guide-msg">Spaces don't count toward minimun.</small>
                 <br />
                 <label>Choose an emoji: </label>
                 <select 
@@ -105,8 +107,9 @@ function CreateEntry () {
                         <option value="😌" aria-label="Calm">😌 Calm</option>
                 </select>
                 <br />
+                <p className={`content-length ${invalidMsg ? "invalid" : ""}`}>({contentLen} {contentLen === 1 ? "character" : "characters"})</p>
                 <button
-                    disabled={loading || invalidateMsg}
+                    disabled={loading || Boolean(invalidMsg)}
                     type="submit"
                 >
                     {loading ? `Saving...` : `Save Entry`}
