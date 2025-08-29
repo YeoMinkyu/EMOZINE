@@ -59,7 +59,7 @@ function Login() {
         <div className="login-container">
             <h2>Login to EMOZINE</h2>
             {error && <p role="alert" className="error" style={{ color: "red" }}>{error}</p>}
-            <form onSubmit={handleSubmit} className="login-form">
+            <form onSubmit={handleSubmit} className="login-form" aria-busy={loading}>
                 <label>Username:</label>
                 <input
                     disabled={loading}

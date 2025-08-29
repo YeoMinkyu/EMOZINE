@@ -1,13 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
-import { readServerError, handleError401 } from "../utils/api"
+import { readServerError, handleError401, validateMinLengthJournal } from "../utils/api"
+import "./CreateEntry.css";
 
 function CreateEntry () {
+    const MIN_LENGTH = 5;
     const [content, setContent] = useState("");
     const [emoji, setEmoji] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    
+    const contentLen = content.trim().length;
+    const invalidateMsg = validateMinLengthJournal(contentLen, MIN_LENGTH);
+    const guideMsg = (() => {
+    if (contentLen === 0) return "Please write something before saving.";
+    if (contentLen < MIN_LENGTH) return `Please write at least ${MIN_LENGTH} characters.`;
+    return ""; // once valid, no guide message
+    })();
+
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
@@ -18,6 +29,11 @@ function CreateEntry () {
 
     }, [navigate])
 
+    const handleChangeContent = (e) => {
+        setError("");
+        setContent(e.target.value);
+    }
+
     // handleSubmit with async-await and try catch to POST journal entry to backend('/api/entries/')
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,6 +42,12 @@ function CreateEntry () {
         
         setError("");
         setLoading(true);
+
+        if (!!invalidateMsg) {
+            setError(invalidateMsg);
+            setLoading(false);
+            return;
+        }
 
         const token = localStorage.getItem("access_token");
 
@@ -60,15 +82,15 @@ function CreateEntry () {
     return (
         <div className="create-entry">
             <h2>Write a New Journal Entry</h2>
-            {error && <p role="alert" style={{color: "red"}}>{error}</p>}
             <form onSubmit={handleSubmit} aria-busy={loading}>
                 <textarea
                     disabled={loading}
                     rows="6"
-                    placeholder="What's on your mind?"
+                    placeholder={`What's on your mind?`}
                     value={content}
-                    onChange={(e)=>setContent(e.target.value)}
+                    onChange={handleChangeContent}
                 />
+                {(error && <p className="error-msg" role="alert">{error}</p> )|| (guideMsg && <p className="guide-msg">{guideMsg}</p>)}
                 <br />
                 <label>Choose an emoji: </label>
                 <select 
@@ -84,7 +106,7 @@ function CreateEntry () {
                 </select>
                 <br />
                 <button
-                    disabled={loading}
+                    disabled={loading || invalidateMsg}
                     type="submit"
                 >
                     {loading ? `Saving...` : `Save Entry`}
