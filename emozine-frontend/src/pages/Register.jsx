@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { readServerError } from "../utils/api"
+import { useRegistrationValidation } from "../hooks/useEntryValidation";
 
 function Register() {
     const [username, setUsername] = useState("");
@@ -8,6 +9,8 @@ function Register() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate()
+
+    const { isUsernameInvalid, isPasswordInvalid } = useRegistrationValidation(username, password);
 
     useEffect(() => {
         const token = localStorage.getItem('access_token');
@@ -33,7 +36,7 @@ function Register() {
             });
 
             if (response.ok) {
-                navigate('/login');
+                navigate('/login', { replace: true });
             } else {
                 const msg = (await readServerError(response)) || `Registration failed (HTTP ${response.status})`;
                 setError(msg);
@@ -47,29 +50,35 @@ function Register() {
 
     return (
         <div className="register-container">
-            <h2>Create an account</h2>
+            <h2>Create account</h2>
             <form onSubmit={handleRegister} className="register-form" aria-busy={loading}>
-                <label>User Name:</label>
+                <label htmlFor="username">User Name</label>
                 <input
+                    id="username"
+                    name="username"
                     type="text"
                     value={username}
                     onChange={(e)=>setUsername(e.target.value)}
                     required
                 />
-                <label>Password:</label>
-                <input 
+                <label htmlFor="password">Password</label>
+                <input
+                    id="password"
+                    name="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
                 <button
-                    disabled={loading}
+                    disabled={isUsernameInvalid || isPasswordInvalid || loading}
                     type="submit"
                 >
-                    {loading ? `Registering...` : `Register`}
+                    {loading ? `Registering...` : `Create account`}
                 </button>
-                {error && <p role="alert" style={{color: "red"}}>{error}</p>}
+                {error && <p className="error" role="alert">{error}</p>}
+                <label>Have an account?</label>
+                <Link to={`/login`}>Log in</Link>
             </form>
         </div>
     );

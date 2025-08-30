@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { readServerError } from "../utils/api"
+import "./Login.css";
+import { useLoginValidation } from "../hooks/useEntryValidation";
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -8,6 +10,8 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
+    const isInvalid = useLoginValidation(username, password);
 
     useEffect(()=>{
         const token = localStorage.getItem('access_token');
@@ -37,14 +41,14 @@ function Login() {
             });
 
             if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('access_token', data.access);
-            localStorage.setItem('refresh_token', data.refresh);
+                const data = await response.json();
+                localStorage.setItem('access_token', data.access);
+                localStorage.setItem('refresh_token', data.refresh);
 
-            navigate('/dashboard');
+                navigate('/dashboard', { replace: true });
 
             } else {
-                const msg = (await readServerError(response)) || `Login falied. Check your username or password (HTTP ${response.status})`
+                const msg = (await readServerError(response)) || `Login failed. Check your username or password (HTTP ${response.status})`
                 setError(msg);
             }
         } catch(error) {
@@ -57,19 +61,22 @@ function Login() {
 
     return(
         <div className="login-container">
-            <h2>Login to EMOZINE</h2>
-            {error && <p role="alert" className="error" style={{ color: "red" }}>{error}</p>}
+            <h2>Login</h2>
             <form onSubmit={handleSubmit} className="login-form" aria-busy={loading}>
-                <label>Username:</label>
+                <label htmlFor="username">User Name</label>
                 <input
+                    id="username"
+                    name="username"
                     disabled={loading}
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
                 />
-                <label>Password:</label>
+                <label htmlFor="password">Password</label>
                 <input
+                    id="password"
+                    name="password"
                     disabled={loading}
                     type="password"
                     value={password}
@@ -77,11 +84,14 @@ function Login() {
                     required
                 />
                 <button
-                disabled={loading}
-                aria-disabled={loading}
-                type="submit">
-                    {loading ? "Signing in..." : "Login"}
+                    disabled={loading || isInvalid}
+                    aria-disabled={loading}
+                    type="submit">
+                        {loading ? "Logging in..." : "Login"}
                 </button>
+                {error && <p role="alert" className="error">{error}</p>}
+                <label>No account?</label>
+                <Link to={`/register`}>Sign up</Link>
             </form>
         </div>
     );

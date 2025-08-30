@@ -20,3 +20,32 @@ export function useEntryValidation(content, MIN_LENGTH=5) {
 
     return {contentLen, invalidMsg, guideMsg};
 }
+
+export function useLoginValidation(id="", password="") {
+    const idLen = id.trim().length;
+    const passwordLen = password.trim().length;
+
+    const isInvalid = useMemo(() => {
+        if (idLen === 0 || passwordLen === 0) return true;
+        return false;
+    }, [idLen, passwordLen]);
+
+    return isInvalid;
+}
+
+export function useRegistrationValidation(id="", password="") {
+    const idLen = id.trim().length;
+    const passwordLen = password.trim().length;
+
+    const isUsernameInvalid = useMemo(() => {
+        if (idLen === 0) return true;
+        return false; 
+    }, [idLen]);
+
+    const isPasswordInvalid = useMemo(() => {
+        if (passwordLen === 0) return true;
+        return false;
+    }, [passwordLen]);
+
+    return { isUsernameInvalid, isPasswordInvalid }
+}
