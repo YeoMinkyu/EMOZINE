@@ -20,13 +20,3 @@ export async function readServerError(response) {
         return null;
     }
 }
-
-export function validateMinLengthJournal(contentLength, minChar) {
-    if (contentLength === 0) {
-        return `Please write something before saving.` 
-    } else if (contentLength < minChar) {
-        return `Write at least ${minChar} characters…`;
-    } else {
-        return null;
-    }
-}

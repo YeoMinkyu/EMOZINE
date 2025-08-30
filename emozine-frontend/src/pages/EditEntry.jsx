@@ -1,22 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { readServerError, handleError401 } from "../utils/api"
+import { EntryForm } from "../components/EntryForm";
+import { useEntryValidation } from "../hooks/useEntryValidation";
 
 function EditEntry() {
     const [content, setContent] = useState("");
     const [emoji, setEmoji] = useState("");
     const [loading, setLoading] = useState(true);
-    const [updating, setUpdating] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const {id} = useParams();
+    const entryRef = useRef(null);
     const navigate = useNavigate();
+    const {contentLen, invalidMsg, guideMsg} = useEntryValidation(content);
+
+    useEffect(() => {
+        if (!loading && entryRef) {
+            entryRef.current.focus();
+        }
+    },[loading]);
 
     useEffect (()=> {
+        const token = localStorage.getItem("access_token");
+        if (!token) {navigate(`/login`); return;}
+
 
         const fetchContent = async () => {
             try{
-                const token = localStorage.getItem("access_token");
-
                 setLoading(true);
                 
                 const response = await fetch(`http://127.0.0.1:8000/api/entries/${id}/`, {
@@ -35,7 +46,7 @@ function EditEntry() {
                     setContent(data.content);
                     setEmoji(data.emoji);
                 } else {
-                    const msg = (await readServerError(response)) || `Failed to load the content will be edited (HTTP ${response.status})`
+                    const msg = (await readServerError(response)) || `Failed to load entry for editing. (HTTP ${response.status})`
                     setError(msg)
                 }
             } catch (error) {
@@ -47,18 +58,23 @@ function EditEntry() {
         fetchContent();
     }, [id, navigate]);
 
+    const handleChangeContent = (e) => {
+        setError("");
+        setContent(e.target.value);
+    }
+
     const handleEditing = async (e) => {
         e.preventDefault();
 
-        if (updating) return;
+        if (submitting) return;
         setError("");
 
-        if (!content) {
-            setError("Empty content cannot update!");
+        if (invalidMsg) {
+            setError(invalidMsg);
             return;
         }
 
-        setUpdating(true);
+        setSubmitting(true);
 
         const token = localStorage.getItem("access_token");
 
@@ -73,7 +89,7 @@ function EditEntry() {
             });
 
             if (handleError401(response, navigate)) {
-                setUpdating(false);
+                setSubmitting(false);
                 return;
             }
 
@@ -83,44 +99,31 @@ function EditEntry() {
                 const msg = (await readServerError(response)) || `Failed editing (HTTP ${response.status})`;
                 setError(msg);
             }
-        } catch(error) {
-            setError(error?.message || `Network error editing content.`);
+        } catch(err) {
+            setError(err?.message || `Network error editing content.`);
         } finally {
-            setUpdating(false);
+            setSubmitting(false);
         }
     };
 
     return (
-        <form onSubmit={handleEditing} aria-busy={loading}>
-            <textarea
-                disabled={loading || updating}
-                rows="6"
-                value={content}
-                onChange={(e)=> setContent(e.target.value)}
+        <div className="edit-entry">
+            <EntryForm 
+                onSubmit={handleEditing}
+                onContentChange={handleChangeContent}
+                onEmojiChange={(e) => setEmoji(e.target.value)}
+                onCancel={() => navigate('/dashboard')}
+                loading={loading}
+                submitting={submitting}
+                content={content}
+                error={error} 
+                guideMsg={guideMsg}
+                emoji={emoji}
+                invalidMsg={invalidMsg}
+                contentLen={contentLen}
+                entryRef={entryRef}
             />
-            <br />
-            <select value={emoji} onChange={(e)=>setEmoji(e.target.value)} disabled={loading || updating}>
-                <option value="" aria-label="None">😐 None</option>
-                <option value="😊" aria-label="Happy">😊 Happy</option>
-                <option value="😢" aria-label="Sad">😢 Sad</option>
-                <option value="😡" aria-label="Angry">😡 Angry</option>
-                <option value="😌" aria-label="Calm">😌 Calm</option>
-            </select>
-            <button
-                disabled={loading || updating}
-                type="submit"
-            >
-                {updating ? `Updating...` : `Update`}
-            </button>
-            <button
-                disabled={loading || updating}
-                type="button"
-                onClick={() => navigate('/entries')}
-            >
-                Cancel
-            </button>
-            {error && <p role="alert" style={{color:"red"}}>{error}</p>}
-        </form>
+        </div>
     );
 }
 

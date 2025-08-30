@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
-import { readServerError, handleError401, validateMinLengthJournal } from "../utils/api"
-import "./CreateEntry.css";
+import { readServerError, handleError401 } from "../utils/api"
+import { EntryForm } from "../components/EntryForm";
+import { useEntryValidation } from "../hooks/useEntryValidation";
 
 function CreateEntry () {
-    const MIN_LENGTH = 5;
     const [content, setContent] = useState("");
     const [emoji, setEmoji] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
+    const entryRef = useRef(null);
     const navigate = useNavigate();
-    
-    const contentLen = content.trim().length;
-    const invalidMsg = validateMinLengthJournal(contentLen, MIN_LENGTH);
-    const guideMsg = (() => {
-    if (contentLen === 0) return "Please write something before saving.";
-    if (contentLen < MIN_LENGTH) return `Please write at least ${MIN_LENGTH} characters.`;
-    return ""; // once valid, no guide message
-    })();
+    const {contentLen, invalidMsg, guideMsg} = useEntryValidation(content);
 
+    useEffect(() => {
+        if (entryRef) {
+            entryRef.current.focus();
+        }
+    },[]);
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
 
         if(!token) {
             navigate('/login');
+            return;
         }
 
     }, [navigate])
@@ -38,14 +38,14 @@ function CreateEntry () {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        if (loading) return;
+        if (submitting) return;
         
         setError("");
-        setLoading(true);
+        setSubmitting(true);
 
         if (invalidMsg) {
             setError(invalidMsg);
-            setLoading(false);
+            setSubmitting(false);
             return;
         }
 
@@ -62,7 +62,7 @@ function CreateEntry () {
             });
 
             if (handleError401(response, navigate)) {
-                setLoading(false);
+                setSubmitting(false);
                 return;
             }
 
@@ -72,49 +72,29 @@ function CreateEntry () {
                 const msg = (await readServerError(response)) || `Failed to create entry (HTTP ${response.status})`;
                 setError(msg);
             }
-        } catch (error) {
-            setError(error?.message || `Network error while creating entry.`);
+        } catch (err) {
+            setError(err?.message || `Network error while creating entry.`);
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     }
 
     return (
         <div className="create-entry">
-            <h2>Write a New Journal Entry</h2>
-            <form onSubmit={handleSubmit} aria-busy={loading}>
-                <textarea
-                    disabled={loading}
-                    rows="6"
-                    placeholder={`What's on your mind?`}
-                    value={content}
-                    onChange={handleChangeContent}
-                />
-                <br />
-                {(error && <p className="error-msg" role="alert">{error}</p> )|| (guideMsg && <p className="guide-msg">{guideMsg}</p>)}
-                <small className="guide-msg">Spaces don't count toward minimun.</small>
-                <br />
-                <label>Choose an emoji: </label>
-                <select 
-                    disabled={loading}
-                    value={emoji} 
-                    onChange={(e) => setEmoji(e.target.value)    
-                    }>
-                        <option value="" aria-label="None">😐 None</option>
-                        <option value="😊" aria-label="Happy">😊 Happy</option>
-                        <option value="😢" aria-label="Sad">😢 Sad</option>
-                        <option value="😡" aria-label="Angry">😡 Angry</option>
-                        <option value="😌" aria-label="Calm">😌 Calm</option>
-                </select>
-                <br />
-                <p className={`content-length ${invalidMsg ? "invalid" : ""}`}>({contentLen} {contentLen === 1 ? "character" : "characters"})</p>
-                <button
-                    disabled={loading || Boolean(invalidMsg)}
-                    type="submit"
-                >
-                    {loading ? `Saving...` : `Save Entry`}
-                </button>
-            </form>
+            <EntryForm 
+                onSubmit={handleSubmit}
+                onContentChange={handleChangeContent}
+                onEmojiChange={(e) => setEmoji(e.target.value)}
+                onCancel={() => navigate('/dashboard')}
+                submitting={submitting}
+                content={content}
+                error={error} 
+                guideMsg={guideMsg}
+                emoji={emoji}
+                invalidMsg={invalidMsg}
+                contentLen={contentLen}
+                entryRef={entryRef}
+            />
         </div>
     );
 }
