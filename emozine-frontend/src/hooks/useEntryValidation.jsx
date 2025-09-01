@@ -21,19 +21,26 @@ export function useEntryValidation(content, MIN_LENGTH=5) {
     return {contentLen, invalidMsg, guideMsg};
 }
 
-export function useLoginValidation(id="", password="") {
+export function useLoginValidation(id="", password="", minLength=6) {
     const idLen = id.trim().length;
     const passwordLen = password.trim().length;
 
     const isInvalid = useMemo(() => {
-        if (idLen === 0 || passwordLen === 0) return true;
+        if (idLen === 0 || passwordLen < minLength) return true;
         return false;
     }, [idLen, passwordLen]);
 
-    return isInvalid;
+    const passwordGuide = useMemo(() => {
+        if (passwordLen < minLength) {
+            return `Your password must be at least ${minLength} characters`;
+        }
+        return "";
+    }, [passwordLen]);
+
+    return {isInvalid, passwordGuide, minLength};
 }
 
-export function useRegistrationValidation(id="", password="") {
+export function useRegistrationValidation(id="", password="", minLength=6) {
     const idLen = id.trim().length;
     const passwordLen = password.trim().length;
 
@@ -43,9 +50,16 @@ export function useRegistrationValidation(id="", password="") {
     }, [idLen]);
 
     const isPasswordInvalid = useMemo(() => {
-        if (passwordLen === 0) return true;
+        if (passwordLen < minLength) return true;
         return false;
     }, [passwordLen]);
 
-    return { isUsernameInvalid, isPasswordInvalid }
+    const passwordGuide = useMemo(() => {
+        if (passwordLen < minLength) {
+            return `Your password must be at least ${minLength} characters`;
+        }
+        return "";
+    }, [passwordLen]);
+
+    return { isUsernameInvalid, isPasswordInvalid, passwordGuide, minLength }
 }

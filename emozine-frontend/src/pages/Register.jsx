@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { readServerError } from "../utils/api"
 import { useRegistrationValidation } from "../hooks/useEntryValidation";
@@ -8,9 +8,17 @@ function Register() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [isPwdFocus, setIsPwdFocus] = useState(false);
+    const usernameRef = useRef(null);
     const navigate = useNavigate()
+    const { isUsernameInvalid, isPasswordInvalid,  passwordGuide, minLength } = useRegistrationValidation(username, password);
+    const showPwdGuide = (isPwdFocus || isPasswordInvalid) && !!passwordGuide;
 
-    const { isUsernameInvalid, isPasswordInvalid } = useRegistrationValidation(username, password);
+    useEffect(() => {
+        if (usernameRef.current) {
+            usernameRef.current.focus();
+        }
+    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem('access_token');
@@ -52,10 +60,11 @@ function Register() {
         <div className="register-container">
             <h2>Create account</h2>
             <form onSubmit={handleRegister} className="register-form" aria-busy={loading}>
-                <label htmlFor="username">User Name</label>
+                <label htmlFor="username">Username</label>
                 <input
                     id="username"
                     name="username"
+                    ref={usernameRef}
                     type="text"
                     value={username}
                     onChange={(e)=>setUsername(e.target.value)}
@@ -66,8 +75,13 @@ function Register() {
                     id="password"
                     name="password"
                     type="password"
+                    aria-describedby="password-help"
+                    aria-invalid={isPasswordInvalid ? "true" : "false"}
                     value={password}
+                    minLength={minLength}
                     onChange={(e) => setPassword(e.target.value)}
+                    onFocus={() => setIsPwdFocus(true)}
+                    onBlur={() => setIsPwdFocus(false)}
                     required
                 />
                 <button
@@ -76,7 +90,22 @@ function Register() {
                 >
                     {loading ? `Registering...` : `Create account`}
                 </button>
-                {error && <p className="error" role="alert">{error}</p>}
+                {
+                    error
+                    ? 
+                        <p className="error" role="alert">{error}</p>
+                    : 
+                        showPwdGuide
+                    ?   <small
+                            id="password-help"
+                            className="password-guide"
+                            aria-live="polite"
+                        >
+                            {passwordGuide}
+                        </small>
+                    :
+                        null
+                }
                 <label>Have an account?</label>
                 <Link to={`/login`}>Log in</Link>
             </form>

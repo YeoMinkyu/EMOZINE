@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { readServerError } from "../utils/api"
 import "./Login.css";
@@ -9,9 +9,17 @@ function Login() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [isPwdFocus, setIsPwdFocus] = useState(false);
+    const usernameRef = useRef(null);
     const navigate = useNavigate();
+    const {isInvalid, passwordGuide, minLength} = useLoginValidation(username, password);
+    const showPwdGuide = (isPwdFocus || isInvalid) && !!passwordGuide;
 
-    const isInvalid = useLoginValidation(username, password);
+    useEffect(() => {
+        if (usernameRef.current) {
+            usernameRef.current.focus();
+        }   
+    }, []);
 
     useEffect(()=>{
         const token = localStorage.getItem('access_token');
@@ -56,17 +64,17 @@ function Login() {
         } finally {
             setLoading(false);
         }
-        
     }
 
     return(
         <div className="login-container">
             <h2>Login</h2>
             <form onSubmit={handleSubmit} className="login-form" aria-busy={loading}>
-                <label htmlFor="username">User Name</label>
+                <label htmlFor="username">Username</label>
                 <input
                     id="username"
                     name="username"
+                    ref={usernameRef}
                     disabled={loading}
                     type="text"
                     value={username}
@@ -77,10 +85,14 @@ function Login() {
                 <input
                     id="password"
                     name="password"
-                    disabled={loading}
+                    aria-describedby="password-help"
                     type="password"
+                    disabled={loading}
                     value={password}
+                    minLength={minLength}
                     onChange={(e) => setPassword(e.target.value)}
+                    onFocus={() => setIsPwdFocus(true)}
+                    onBlur={() => setIsPwdFocus(false)}
                     required
                 />
                 <button
@@ -89,7 +101,23 @@ function Login() {
                     type="submit">
                         {loading ? "Logging in..." : "Login"}
                 </button>
-                {error && <p role="alert" className="error">{error}</p>}
+                {
+                    error
+                    ?
+                        <p className="error" role="alert">{error}</p>
+                    :
+                        showPwdGuide
+                    ?
+                        <small
+                            id="password-help"
+                            className="password-guide"
+                            aria-live="polite"
+                        >
+                            {passwordGuide}
+                        </small>
+                    :
+                        null
+                }
                 <label>No account?</label>
                 <Link to={`/register`}>Sign up</Link>
             </form>
