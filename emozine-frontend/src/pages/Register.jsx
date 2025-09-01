@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { readServerError } from "../utils/api"
-import { useRegistrationValidation } from "../hooks/useEntryValidation";
+import { useRegistrationValidation } from "../hooks/auth/useRegistrationValidation";
+import { PASSWORD_MIN_LENGTH } from "../config/validation";
+import { IdPwdForm } from "../components/IdPwdForm";
 
 function Register() {
     const [username, setUsername] = useState("");
@@ -11,7 +13,7 @@ function Register() {
     const [isPwdFocus, setIsPwdFocus] = useState(false);
     const usernameRef = useRef(null);
     const navigate = useNavigate()
-    const { isUsernameInvalid, isPasswordInvalid,  passwordGuide, minLength } = useRegistrationValidation(username, password);
+    const { isUsernameInvalid, isPasswordInvalid,  passwordGuide, minLength } = useRegistrationValidation(username, password, PASSWORD_MIN_LENGTH);
     const showPwdGuide = (isPwdFocus || isPasswordInvalid) && !!passwordGuide;
 
     useEffect(() => {
@@ -28,7 +30,7 @@ function Register() {
         }
     }, [navigate]);
     
-    const handleRegister = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (loading) return;
@@ -58,57 +60,23 @@ function Register() {
 
     return (
         <div className="register-container">
-            <h2>Create account</h2>
-            <form onSubmit={handleRegister} className="register-form" aria-busy={loading}>
-                <label htmlFor="username">Username</label>
-                <input
-                    id="username"
-                    name="username"
-                    ref={usernameRef}
-                    type="text"
-                    value={username}
-                    onChange={(e)=>setUsername(e.target.value)}
-                    required
-                />
-                <label htmlFor="password">Password</label>
-                <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    aria-describedby="password-help"
-                    aria-invalid={isPasswordInvalid ? "true" : "false"}
-                    value={password}
-                    minLength={minLength}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setIsPwdFocus(true)}
-                    onBlur={() => setIsPwdFocus(false)}
-                    required
-                />
-                <button
-                    disabled={isUsernameInvalid || isPasswordInvalid || loading}
-                    type="submit"
-                >
-                    {loading ? `Registering...` : `Create account`}
-                </button>
-                {
-                    error
-                    ? 
-                        <p className="error" role="alert">{error}</p>
-                    : 
-                        showPwdGuide
-                    ?   <small
-                            id="password-help"
-                            className="password-guide"
-                            aria-live="polite"
-                        >
-                            {passwordGuide}
-                        </small>
-                    :
-                        null
-                }
-                <label>Have an account?</label>
-                <Link to={`/login`}>Log in</Link>
-            </form>
+            <IdPwdForm
+                onSubmit={handleSubmit}
+                onUsernameChange={(e) => setUsername(e.target.value)}
+                onPwdChange={(e) => setPassword(e.target.value)}
+                onFocus={() => setIsPwdFocus(true)}
+                onBlur={() => setIsPwdFocus(false)}
+                variant="register"
+                usernameRef={usernameRef}
+                username={username}
+                loading={loading}
+                minLength={minLength}
+                password={password}
+                isInvalid={isUsernameInvalid || isPasswordInvalid}
+                error={error}
+                showPwdGuide={showPwdGuide}
+                passwordGuide={passwordGuide}
+            />
         </div>
     );
 }

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
 import { readServerError, handleError401 } from "../utils/api"
 import { EntryForm } from "../components/EntryForm";
-import { useEntryValidation } from "../hooks/useEntryValidation";
+import { useEntryValidation } from "../hooks/entries/useEntryValidation";
+import { ENTRY_MIN_LENGTH } from "../config/validation";
 
 function CreateEntry () {
     const [content, setContent] = useState("");
@@ -11,7 +12,7 @@ function CreateEntry () {
     const [error, setError] = useState("");
     const entryRef = useRef(null);
     const navigate = useNavigate();
-    const {contentLen, invalidMsg, guideMsg} = useEntryValidation(content);
+    const {contentLen, invalidMsg, guideMsg} = useEntryValidation(content, ENTRY_MIN_LENGTH);
 
     useEffect(() => {
         if (entryRef) {

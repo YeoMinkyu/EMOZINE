@@ -1,8 +1,11 @@
 import React, {useEffect, useRef, useState} from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { readServerError } from "../utils/api"
+import { useLoginValidation } from "../hooks/auth/useLoginValidation";
+import { PASSWORD_MIN_LENGTH } from "../config/validation";
+import { IdPwdForm } from "../components/IdPwdForm";
 import "./Login.css";
-import { useLoginValidation } from "../hooks/useEntryValidation";
+
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -12,7 +15,7 @@ function Login() {
     const [isPwdFocus, setIsPwdFocus] = useState(false);
     const usernameRef = useRef(null);
     const navigate = useNavigate();
-    const {isInvalid, passwordGuide, minLength} = useLoginValidation(username, password);
+    const {isInvalid, passwordGuide, minLength} = useLoginValidation(username, password, PASSWORD_MIN_LENGTH);
     const showPwdGuide = (isPwdFocus || isInvalid) && !!passwordGuide;
 
     useEffect(() => {
@@ -31,6 +34,7 @@ function Login() {
     }, [navigate]);
 
     const handleSubmit = async (e) => {
+        console.log(`[DEBUG]`);
         e.preventDefault(); // stop page reload
         if (loading) return;
         setError("");
@@ -68,59 +72,23 @@ function Login() {
 
     return(
         <div className="login-container">
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit} className="login-form" aria-busy={loading}>
-                <label htmlFor="username">Username</label>
-                <input
-                    id="username"
-                    name="username"
-                    ref={usernameRef}
-                    disabled={loading}
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                />
-                <label htmlFor="password">Password</label>
-                <input
-                    id="password"
-                    name="password"
-                    aria-describedby="password-help"
-                    type="password"
-                    disabled={loading}
-                    value={password}
-                    minLength={minLength}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setIsPwdFocus(true)}
-                    onBlur={() => setIsPwdFocus(false)}
-                    required
-                />
-                <button
-                    disabled={loading || isInvalid}
-                    aria-disabled={loading}
-                    type="submit">
-                        {loading ? "Logging in..." : "Login"}
-                </button>
-                {
-                    error
-                    ?
-                        <p className="error" role="alert">{error}</p>
-                    :
-                        showPwdGuide
-                    ?
-                        <small
-                            id="password-help"
-                            className="password-guide"
-                            aria-live="polite"
-                        >
-                            {passwordGuide}
-                        </small>
-                    :
-                        null
-                }
-                <label>No account?</label>
-                <Link to={`/register`}>Sign up</Link>
-            </form>
+            <IdPwdForm
+                onSubmit={handleSubmit}
+                onUsernameChange={(e) => setUsername(e.target.value)}
+                onPwdChange={(e) => setPassword(e.target.value)}
+                onFocus={() => setIsPwdFocus(true)}
+                onBlur={() => setIsPwdFocus(false)}
+                variant="login"
+                usernameRef={usernameRef}
+                username={username}
+                loading={loading}
+                minLength={minLength}
+                password={password}
+                isInvalid={isInvalid}
+                error={error}
+                showPwdGuide={showPwdGuide}
+                passwordGuide={passwordGuide}
+            />
         </div>
     );
 }
