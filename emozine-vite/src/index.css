@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+.h1-primary {
+  @apply text-3xl font-bold;
+}
+
+.h2-primary {
+  @apply text-2xl font-bold;
+}
