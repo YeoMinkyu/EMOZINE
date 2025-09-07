@@ -1,9 +1,25 @@
 @import "tailwindcss";
 
+html, body, #root {
+  @apply w-screen h-screen;
+}
+
 .h1-primary {
   @apply text-3xl font-bold;
 }
 
 .h2-primary {
   @apply text-2xl font-bold;
+}
+
+button {
+  @apply px-4 py-2 border rounded-md bg-gray-950 text-white hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-default cursor-pointer;
+}
+
+.error-msg {
+  @apply text-red-500;
+}
+
+.guide-msg {
+  @apply  text-gray-400;
 }

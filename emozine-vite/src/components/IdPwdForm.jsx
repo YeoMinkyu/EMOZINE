@@ -75,7 +75,7 @@ export function IdPwdForm({
                     </div>
                     
                     <button
-                        className="w-full border rounded-md bg-gray-950 text-white"
+                        className="w-full"
                         disabled={loading || isInvalid}
                         aria-disabled={loading}
                         type="submit">
@@ -84,12 +84,12 @@ export function IdPwdForm({
                     {
                         error
                         ?
-                            <p className="w-full block text-center" role="alert">{error}</p>
+                            <p className="error-msg w-full block text-center" role="alert">{error}</p>
                         :
                             showPwdGuide
                         ?
                             <small
-                                className="w-full block text-center text-gray-400"
+                                className="guide-msg w-full block text-center"
                                 id="password-help"
                                 aria-live="polite"
                             >
@@ -105,7 +105,7 @@ export function IdPwdForm({
                             {defaults.switchLabelText}
                         </label>
                         <Link
-                            className="text-sm text-gray-400 underline hover:text-gray-950" 
+                            className="text-sm font-medium text-gray-400 underline hover:text-gray-950" 
                             to={defaults.switchLinkAddress}>{defaults.switchLinkText}</Link>
                     </div>
                 </form>

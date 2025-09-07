@@ -1,5 +1,3 @@
-import "./EntryForm.css";
-
 export function EntryForm ({
     onSubmit, 
     onContentChange,
@@ -16,8 +14,11 @@ export function EntryForm ({
     entryRef = null,
 }) {
     return (
-        <form onSubmit={onSubmit} aria-busy={loading || submitting}>
+        <div className="w-full min-h-screen flex justify-center my-20 px-4">
+            <form className="w-full max-w-2xl space-y-4"
+                onSubmit={onSubmit} aria-busy={loading || submitting}>
                 <textarea
+                    className="w-full text-base focus:outline-none placeholder:font-bold placeholder:text-xl p-3 resize-none"
                     ref={entryRef}
                     disabled={loading || submitting}
                     rows="6"
@@ -25,42 +26,44 @@ export function EntryForm ({
                     value={content}
                     onChange={onContentChange}
                 />
-                <br />
-                {(error && <p className="error-msg" role="alert">{error}</p> )|| (guideMsg && <p className="guide-msg">{guideMsg}</p>)}
-                <small className="guide-msg">Spaces don't count toward minimum.</small>
-                <br />
-                    <EmojiSelector 
+                <EmojiSelector 
                         onEmojiChange={onEmojiChange}
                         emoji={emoji}
                         loading={loading}
                         submitting={submitting}
-                    />
-                <br />
-                <p className={`content-length ${invalidMsg ? "invalid" : ""}`}>
-                    ({contentLen} {contentLen === 1 ? "character" : "characters"})
-                </p>
-                <button
+                />
+                <div>
+                    {error && <p className="error-msg" role="alert">{error}</p>}
+                    <small className={`${invalidMsg ? "text-red-500" : "guide-msg"}`}>
+                        ({contentLen} {contentLen === 1 ? "character" : "characters"})
+                    </small>
+                    <small className="guide-msg block">Spaces don't count toward minimum.</small>
+                </div>
+                <div className="flex w-full justify-end">
+                    <button
                     disabled={loading || submitting || Boolean(invalidMsg)}
                     type="submit"
-                >
-                    {submitting ? `Saving...` : `Save Entry`}
-                </button>
-                <button
-                    disabled={loading || submitting}
-                    type="button"
-                    onClick={onCancel}
-                >
-                    Cancel
-                </button>
+                    >
+                        {submitting ? `Saving...` : `Save Entry`}
+                    </button>
+                    <button
+                        disabled={loading || submitting}
+                        type="button"
+                        onClick={onCancel}
+                    >
+                        Cancel
+                    </button>
+                </div>
             </form>
+        </div>
     );
 }
 
 function EmojiSelector({ onEmojiChange, emoji, loading, submitting }) {
     return(
-        <div className="emoji-selector">
-             <label>Choose an emoji: </label>
-            <select 
+        <div className="flex max-w-2xl place-content-end">
+            <select
+                className="border rounded-md border-gray-300 p-1"
                 disabled={loading || submitting}
                 value={emoji} 
                 onChange={onEmojiChange}
