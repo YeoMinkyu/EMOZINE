@@ -21,7 +21,7 @@ function EmptyState() {
             <p>Begin with a small note. Your feelings matter.</p>
             <button
             type="button"
-            className="empty-state-button"
+            className="button-primary"
             ref={createRef}
             onClick={()=> navigate('/create')}>Write your first journal</button>
         </div>

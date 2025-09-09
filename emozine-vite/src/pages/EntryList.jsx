@@ -108,7 +108,9 @@ function EntryList () {
                             <small>{entry.created_at.slice(0, 10)}</small>
                             <br />
                             <Link to={`/entries/${entry.id}/edit`}>Edit</Link>
-                            <button onClick={() => {
+                            <button 
+                                className="button-primary"
+                                onClick={() => {
                                 setDeletedId(entry.id);
                             }
                                 }>Delete</button>

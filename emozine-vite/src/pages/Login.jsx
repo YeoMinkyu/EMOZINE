@@ -34,7 +34,6 @@ function Login() {
     }, [navigate]);
 
     const handleSubmit = async (e) => {
-        console.log(`[DEBUG]`);
         e.preventDefault(); // stop page reload
         if (loading) return;
         setError("");
