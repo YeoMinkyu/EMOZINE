@@ -4,6 +4,13 @@ import Modal from "../components/Modal";
 import { readServerError, handleError401 } from "../utils/api"
 import EmptyState from "./EmptyState";
 
+const formatDate = (dateStr) =>
+    new Date(dateStr).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+
 function EntryList () {
     const [entries, setEntries] = useState([]);
     const [loading, setLoading] = useState(true); // loading about fetching the data of entries from the server
@@ -96,41 +103,86 @@ function EntryList () {
     if (error) return <p style={{ color: "red" }} role="alert">{error}</p>; // Error display: inline
 
     return (
-        <div>
+        <div className="min-h-screen flex items-center justify-center px-4">
             {entries.length === 0
-            ? <EmptyState />
-            : (
-                <ul>
-                    {entries.map(entry => (
-                        <li key={entry.id}>
-                            <strong>{entry.emoji}</strong> {entry.content}
-                            <br />
-                            <small>{entry.created_at.slice(0, 10)}</small>
-                            <br />
-                            <Link to={`/entries/${entry.id}/edit`}>Edit</Link>
-                            <button 
-                                className="button-primary"
-                                onClick={() => {
-                                setDeletedId(entry.id);
-                            }
-                                }>Delete</button>
-                            {deletedId === entry.id && (
-                              <Modal
-                                isOpen={true}
-                                onConfirm={() => handleDelete(deletedId)}
-                                onCancel={() => setDeletedId(null)}
-                                isDeleting={deleting}
-                                id={deletedId}
-                              >
-                                Are you sure want to delete?
-                              </Modal>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            )}
+            ? 
+                <EmptyState />
+            : 
+                <EntryItem
+                    setDeletedId={setDeletedId}
+                    handleDelete={handleDelete}
+                    entries={entries}
+                    deletedId={deletedId}
+                    deleting={deleting}
+                />}
         </div>
     )
+}
+
+function EntryItem(
+    {
+        entries,
+        setDeletedId,
+        handleDelete,
+        deletedId,
+        deleting,
+    } ) {
+    return (
+        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ul className="space-y-4 text-white">
+            {entries.map(entry => (
+                <li 
+                    key={entry.id}
+                    tabIndex={0}
+                    aria-label={`Entry from ${formatDate(entry.created_at)}: ${entry.content}`}
+                    role="article"
+                >
+                    <div className="rounded-md p-4 space-y-4 bg-gray-600 hover:bg-gray-400 shadow-md">
+                        <div>
+                            <div>
+                                <p> {entry.content?.trim() ? entry.content : "No Content"} </p>
+                                <strong>{entry.emoji}</strong>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <small>{formatDate(entry.created_at)}</small>
+                            <div className="space-x-2">
+                                <Link
+                                    className="button-primary"
+                                    to={`/entries/${entry.id}/edit`}
+                                    aria-label={`Edit entry from ${formatDate(entry.created_at)}`}
+                                >
+                                    Edit
+                                </Link>
+                                <button 
+                                    className="button-primary"
+                                    onClick={() => {
+                                    setDeletedId(entry.id);
+                                    }}
+                                    aria-label={`Delete entry from ${formatDate(entry.created_at)}`}
+                                >
+                                    Delete
+                                </button>
+                                {deletedId === entry.id && (
+                                <Modal
+                                    isOpen={true}
+                                    onConfirm={() => handleDelete(deletedId)}
+                                    onCancel={() => setDeletedId(null)}
+                                    isDeleting={deleting}
+                                    id={deletedId}
+                                >
+                                    Are you sure want to delete?
+                                </Modal>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            ))}
+            </ul>
+        </div>
+    );
+    
 }
 
 export default EntryList

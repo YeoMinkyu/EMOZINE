@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import EmptyIllustration from "../assets/writing.svg";
-import "./EmptyState.css";
 
 function EmptyState() {
     const navigate = useNavigate();
@@ -15,15 +14,24 @@ function EmptyState() {
     }, []) // [](empty dependancy list): run once when component mounts
     
     return (
-        <div className="empty-state" role="status">
-            <img src={EmptyIllustration} className="empty-image" alt="No entries yet" />
-            <h3>No entries yet</h3>
-            <p>Begin with a small note. Your feelings matter.</p>
-            <button
-            type="button"
-            className="button-primary"
-            ref={createRef}
-            onClick={()=> navigate('/create')}>Write your first journal</button>
+        <div>
+            <div className="flex flex-col items-center justify-center space-y-2 text-gray-500">
+                <img
+                src={EmptyIllustration}
+                className="bg-contain bg-center max-w-sm"
+                alt="No entries yet" />
+                <h3 className="h3-primary"> No entries yet</h3>
+                <p>Begin with a small note. Your feelings matter.</p>
+                <button
+                    type="button"
+                    className="button-primary"
+                    ref={createRef}
+                    onClick={()=> navigate('/create')}
+                    aria-label="Start your first journal entry"
+                >
+                    Write your first journal
+                </button>
+            </div>
         </div>
     )
 }
