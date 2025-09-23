@@ -28,7 +28,7 @@ function CreateEntry () {
             return;
         }
 
-    }, [navigate])
+    }, [navigate]);
 
     const handleChangeContent = (e) => {
         setError("");
@@ -68,7 +68,10 @@ function CreateEntry () {
             }
 
             if(response.ok) {
-                navigate('/dashboard');
+                const responseData = await response.json();
+                navigate('/dashboard', {state: 
+                    { newEntry: responseData
+                }});
             } else {
                 const msg = (await readServerError(response)) || `Failed to create entry (HTTP ${response.status})`;
                 setError(msg);

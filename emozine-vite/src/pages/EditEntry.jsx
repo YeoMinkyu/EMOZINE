@@ -95,6 +95,7 @@ function EditEntry() {
             }
 
             if (response.ok) {
+                setSubmitting(false);
                 navigate('/entries');
             } else {
                 const msg = (await readServerError(response)) || `Failed editing (HTTP ${response.status})`;
