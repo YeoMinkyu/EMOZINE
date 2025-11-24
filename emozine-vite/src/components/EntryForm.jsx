@@ -41,12 +41,14 @@ export function EntryForm ({
                 </div>
                 <div className="flex w-full justify-end">
                     <button
+                    className="button-primary"
                     disabled={loading || submitting || Boolean(invalidMsg)}
                     type="submit"
                     >
                         {submitting ? `Saving...` : `Save Entry`}
                     </button>
                     <button
+                        className="button-primary"
                         disabled={loading || submitting}
                         type="button"
                         onClick={onCancel}

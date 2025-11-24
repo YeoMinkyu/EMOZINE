@@ -75,7 +75,7 @@ export function IdPwdForm({
                     </div>
                     
                     <button
-                        className="w-full"
+                        className="button-primary w-full"
                         disabled={loading || isInvalid}
                         aria-disabled={loading}
                         type="submit">
@@ -105,7 +105,7 @@ export function IdPwdForm({
                             {defaults.switchLabelText}
                         </label>
                         <Link
-                            className="text-sm font-medium text-gray-400 underline hover:text-gray-950" 
+                            className="text-sm font-medium underline text-gray-400 hover:text-gray-950" 
                             to={defaults.switchLinkAddress}>{defaults.switchLinkText}</Link>
                     </div>
                 </form>

@@ -4,16 +4,8 @@ html, body, #root {
   @apply w-screen h-screen;
 }
 
-.h1-primary {
-  @apply text-3xl font-bold;
-}
-
-.h2-primary {
-  @apply text-2xl font-bold;
-}
-
-button {
-  @apply px-4 py-2 border rounded-md bg-gray-950 text-white hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-default cursor-pointer;
+.button-primary {
+  @apply px-4 py-2 border rounded-md bg-gray-950 text-white hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-default focus:outline-none focus:ring-2 focus:ring-gray-700 cursor-pointer;
 }
 
 .error-msg {
@@ -22,4 +14,20 @@ button {
 
 .guide-msg {
   @apply  text-gray-400;
+}
+
+.h1-primary {
+  @apply text-3xl font-bold;
+}
+
+.h2-primary {
+  @apply text-2xl font-bold;
+}
+
+.h3-primary {
+  @apply text-xl font-bold;
+}
+
+.navbar {
+  @apply rounded-md text-gray-400 hover:text-gray-950 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-700 px-2 py-1
 }

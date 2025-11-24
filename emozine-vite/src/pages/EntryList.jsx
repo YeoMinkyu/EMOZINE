@@ -1,8 +1,32 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
 import { readServerError, handleError401 } from "../utils/api"
 import EmptyState from "./EmptyState";
+
+const formatDate = (dateStr) =>
+    new Date(dateStr).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+    });
+
+function prependNewEntryIfAvailable(location, setEntries, setLoading, navigate) {
+    const newEntry = location.state?.newEntry;
+
+    if (newEntry) {
+        setEntries(prevEntries => {
+            const alreadyExists = prevEntries.some(entry => entry.id === newEntry.id);
+            return alreadyExists ? prevEntries : [newEntry, ...prevEntries];
+            
+        });
+        setLoading(false);
+        navigate(location.pathname, {replace: true});
+        return true;
+    }
+    
+    return false;
+}
 
 function EntryList () {
     const [entries, setEntries] = useState([]);
@@ -11,49 +35,53 @@ function EntryList () {
     const [deletedId, setDeletedId] = useState(null);
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
-        // Define an async function inside the effect
-        const fetchEntries = async () => {  
-            try {
-                setError("");
-                const token = localStorage.getItem("access_token");
+        const token = localStorage.getItem("access_token");
 
-                if (!token) {
-                    navigate('/login');
-                    return;
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+        if (prependNewEntryIfAvailable(location, setEntries, setLoading, navigate)) {
+            return;
+        } else {
+            // Define an async function inside the effect
+            const fetchEntries = async () => {  
+                try {
+                    setError("");
+                    setLoading(true);
+
+                    const response = await fetch("http://127.0.0.1:8000/api/entries/", {
+                        headers: {
+                            "Authorization": `Bearer ${token}`, 
+                        },
+                    });
+
+                    if (handleError401(response, navigate)) {
+                        setLoading(false);
+                        return;
+                    }
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setEntries(data);    
+                    } else {
+                        const msg = (await readServerError(response)) || `Failed fetching entries (HTTP ${response.status})`;
+                        setError(msg);
+                    }
+                } catch(error) {
+                    setError(error?.message || "Network error while fetching entries");
+                } finally {
+                    setLoading(false); // set loading false when the data is fetched successfully or the process of fetching makes an error from the server
                 }
+            };
 
-                setLoading(true);
-
-                const response = await fetch("http://127.0.0.1:8000/api/entries/", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`, 
-                    },
-                });
-
-                if (handleError401(response, navigate)) {
-                    setLoading(false);
-                    return;
-                }
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setEntries(data);    
-                } else {
-                    const msg = (await readServerError(response)) || `Failed fetching entries (HTTP ${response.status})`;
-                    setError(msg);
-                }
-            } catch(error) {
-                setError(error?.message || "Network error while fetching entries");
-            } finally {
-                setLoading(false); // set loading false when the data is fetched successfully or the process of fetching makes an error from the server
-            }
-        };
-
-        // Then call the async function
-       fetchEntries();
-    }, [navigate])
+            // Then call the async function
+            fetchEntries();
+        }
+    }, [location, navigate]);
 
     const handleDelete = async (id) => {
         if (deleting) return;
@@ -92,43 +120,94 @@ function EntryList () {
         
     }
 
+    const sortedEntries = useMemo(() => 
+        entries.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+    [entries]);
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p style={{ color: "red" }} role="alert">{error}</p>; // Error display: inline
 
     return (
-        <div>
+        <div className="min-h-screen flex items-center justify-center px-4">
             {entries.length === 0
-            ? <EmptyState />
-            : (
-                <ul>
-                    {entries.map(entry => (
-                        <li key={entry.id}>
-                            <strong>{entry.emoji}</strong> {entry.content}
-                            <br />
-                            <small>{entry.created_at.slice(0, 10)}</small>
-                            <br />
-                            <Link to={`/entries/${entry.id}/edit`}>Edit</Link>
-                            <button onClick={() => {
-                                setDeletedId(entry.id);
-                            }
-                                }>Delete</button>
-                            {deletedId === entry.id && (
-                              <Modal
-                                isOpen={true}
-                                onConfirm={() => handleDelete(deletedId)}
-                                onCancel={() => setDeletedId(null)}
-                                isDeleting={deleting}
-                                id={deletedId}
-                              >
-                                Are you sure want to delete?
-                              </Modal>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            )}
+            ? 
+                <EmptyState />
+            : 
+                <EntryItem
+                    setDeletedId={setDeletedId}
+                    handleDelete={handleDelete}
+                    entries={sortedEntries}
+                    deletedId={deletedId}
+                    deleting={deleting}
+                />}
         </div>
     )
+}
+
+function EntryItem(
+    {
+        entries,
+        setDeletedId,
+        handleDelete,
+        deletedId,
+        deleting,
+    } ) {
+    return (
+        <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ul className="space-y-4 text-white">
+            {entries.map(entry => (
+                <li 
+                    key={entry.id}
+                    tabIndex={0}
+                    aria-label={`Entry from ${formatDate(entry.created_at)}: ${entry.content}`}
+                    role="article"
+                >
+                    <div className="rounded-md p-4 space-y-4 bg-gray-600 hover:bg-gray-400 shadow-md">
+                        <div>
+                            <div>
+                                <p> {entry.content?.trim() ? entry.content : "No Content"} </p>
+                                <strong>{entry.emoji}</strong>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <small>{formatDate(entry.created_at)}</small>
+                            <div className="space-x-2">
+                                <Link
+                                    className="button-primary"
+                                    to={`/entries/${entry.id}/edit`}
+                                    aria-label={`Edit entry from ${formatDate(entry.created_at)}`}
+                                >
+                                    Edit
+                                </Link>
+                                <button 
+                                    className="button-primary"
+                                    onClick={() => {
+                                    setDeletedId(entry.id);
+                                    }}
+                                    aria-label={`Delete entry from ${formatDate(entry.created_at)}`}
+                                >
+                                    Delete
+                                </button>
+                                {deletedId === entry.id && (
+                                <Modal
+                                    isOpen={true}
+                                    onConfirm={() => handleDelete(deletedId)}
+                                    onCancel={() => setDeletedId(null)}
+                                    isDeleting={deleting}
+                                    id={deletedId}
+                                >
+                                    Are you sure want to delete?
+                                </Modal>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            ))}
+            </ul>
+        </div>
+    );
+    
 }
 
 export default EntryList

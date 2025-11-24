@@ -34,6 +34,7 @@ function Modal ({children, isOpen, onConfirm, onCancel, isDeleting, id}) {
         <div>
             <p>{children}</p>
             <button
+                className="button-primary"
                 ref={yesRef}
                 onClick={() => onConfirm(id)}
                 disabled={isDeleting}
@@ -41,6 +42,7 @@ function Modal ({children, isOpen, onConfirm, onCancel, isDeleting, id}) {
                 {isDeleting ? "Deleting..." : "Yes"}
             </button>
             <button
+                className="button-primary"
                 onClick={() => onCancel(false)}
                 disabled={isDeleting}
                 aria-disabled={isDeleting}>
