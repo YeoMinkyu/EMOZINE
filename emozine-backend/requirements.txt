@@ -1,0 +1,15 @@
+asgiref==3.9.1
+Django==5.2.5
+django-cors-headers==4.7.0
+djangorestframework==3.16.1
+djangorestframework_simplejwt==5.5.1
+iniconfig==2.3.0
+packaging==25.0
+pluggy==1.6.0
+Pygments==2.19.2
+PyJWT==2.10.1
+pytest==9.0.1
+pytest-django==4.11.1
+setuptools==80.9.0
+sqlparse==0.5.3
+wheel==0.45.1
