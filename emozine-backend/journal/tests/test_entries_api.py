@@ -42,7 +42,7 @@ def test_list_entries_requires_authentication():
 @pytest.mark.django_db
 def test_list_entries_return_only_authenticated_users_entries():
     """
-    Authenticated clients can only see their oewn entries not others.
+    Authenticated clients can only see their own entries not others.
     """
     user = create_user(username='user')
     other_user = create_user(username='other')
