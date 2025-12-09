@@ -5,6 +5,11 @@ from django.contrib.auth import get_user_model
 
 from journal.models import JournalEntry
 
+"""
+Test for the JournalEntry API(list, create, update and delete) to ensure users
+only see and modify their own entries.
+"""
+
 User = get_user_model()
 
 ENTRIES_URL = "/api/entries/"
@@ -26,13 +31,19 @@ def create_authenticated_client(user):
 
 @pytest.mark.django_db
 def test_list_entries_requires_authentication():
+    """
+    Unauthenticated clients should not see any entries and get 401 Unauthorized.
+    """
     client = APIClient()
     response = client.get(ENTRIES_URL)
 
-    assert response.status_code == 401
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 @pytest.mark.django_db
 def test_list_entries_return_only_authenticated_users_entries():
+    """
+    Authenticated clients can only see their own entries not others.
+    """
     user = create_user(username='user')
     other_user = create_user(username='other')
 
@@ -70,6 +81,9 @@ def test_list_entries_return_only_authenticated_users_entries():
 
 @pytest.mark.django_db
 def test_create_entry_authenticated_user():
+    """
+    Authenticated user can create a journal entry and it is linked to that user.
+    """
     user = create_user(username='user1')
 
     client = create_authenticated_client(user)
